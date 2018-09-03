@@ -1,0 +1,94 @@
+<div id="map-canvas"></div>
+<h3></h3>
+<button onclick="initialize()">GENERATE</button>
+
+<style>
+#map-canvas {
+    height: 550px;
+}
+</style>
+
+			<script type="text/javascript" 
+						   src="https://maps.google.com/maps/api/js?sensor=false"></script>
+						   
+				
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+
+    var myLatlng = new google.maps.LatLng(13.011248000500533, 80.23538589477539);
+
+    var map = new google.maps.Map(document.getElementById("map-canvas"), {
+        zoom: 12,
+        center: myLatlng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+	
+	
+ var markers = [];
+function setMapOnAll(map) {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(map);
+        }
+      }
+function randomIntFromInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+function httpGetAsync(theUrl)
+{
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function() { 
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            console.log(xmlHttp.responseText);
+    }
+    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+    xmlHttp.send(null);
+}
+function initialize() {
+	httpGetAsync("https://smartbinlog.mybluemix.net/api/remove/all");
+	setMapOnAll(null);
+    var southWest = new google.maps.LatLng(13.06510842292035, 80.26980400085449);
+    var northEast = new google.maps.LatLng(12.954720126903874, 80.13247489929199);
+    var lngSpan = northEast.lng() - southWest.lng();
+    var latSpan = northEast.lat() - southWest.lat();
+
+    
+	var count=0;
+	var moist=0;
+var lt=0.0;
+var lg=0.0;
+    // Create some markers
+	var i=-15;
+    var lp=setInterval(function(){ if(i>-1){
+		
+		if(i%5==0){		
+		count=randomIntFromInterval(50,73);
+		moist=randomIntFromInterval(50,73);
+		}
+		else{
+		
+		count=randomIntFromInterval(10,15);
+		moist=randomIntFromInterval(10,15);}
+		lt=southWest.lat() + latSpan * Math.random();
+		lg=southWest.lng() + lngSpan * Math.random();
+        var location = new google.maps.LatLng(lt,lg );
+		var dt="https://smartbinlog.mybluemix.net/api/createbin/"+i+"/"+lt+"/"+lg+"/"+count+"/"+moist+"/"+5;
+		console.log(lt+" "+lg);
+		httpGetAsync(dt);
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+		
+		
+        markers.push(marker);
+		}
+		i=i+1;
+		if(i==20)clearInterval(lp)		}, 2000);
+}
+
+
+</script>

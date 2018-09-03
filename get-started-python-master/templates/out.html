@@ -1,0 +1,144 @@
+<div style="height:25;padding:10;background:black">
+<button style="position: absolute; right: 10;" onclick="initialize()">ROUTE</button>
+<input style="position: absolute; right: 70;" type="text" name="ip" id="ip"></input>
+
+<div tyle="position: absolute; left: 10;"><font color="white">Collection Route</font></div>
+</div>
+<div  id="map-canvas"></div>
+<div style="height:.5;padding:10;background:gray"/>
+<style>
+#map-canvas {
+    height: 550px;
+}
+</style>
+
+			<script type="text/javascript" 
+						   src="https://maps.google.com/maps/api/js?sensor=false"></script>
+						   
+				
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+
+    var myLatlng = new google.maps.LatLng(13.011248000500533, 80.23538589477539);
+
+    var map = new google.maps.Map(document.getElementById("map-canvas"), {
+        zoom: 12,
+        center: myLatlng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+	
+	
+ var markers = [];
+ var flightPath;
+ function removePolyline() {
+
+    // polyline exists, remove
+    if(typeof polyline !== 'undefined') {
+        polyline.setMap(null);
+    }
+
+}
+ 
+ 
+function setMapOnAll(map) {
+        for (var i = 0; i < markers.length; i++) {
+          markers[i].setMap(map);
+        }
+      }
+function randomIntFromInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+function initialize() {
+if(document.getElementById('ip').value=="")alert("No value specified")
+else {
+			
+
+	setMapOnAll(null);
+	if (typeof flightPath!== 'undefined') {
+	flightPath.setMap(null);
+	}
+	var stg="Flow Pattern Report :\n\n";
+	var rst=[];
+	$.getJSON("https://smartbinlog.mybluemix.net/api/flow/"+document.getElementById('ip').value, function(data) {
+    //data is the JSON string
+			for(var d in data){
+			stg+="Lat : "+data[d][1]+" Lng : "+data[d][2]+" Bin Count : "+" "+data[d][5]+"\n";
+					var location = new google.maps.LatLng(data[d][1],data[d][2] );
+					var ico="";
+					if(data[d][6]=="1")ico="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+					else ico="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+					var marker = new google.maps.Marker({
+						icon:ico,
+						position: location,
+						map: map
+					});
+					var st="Container "+data[d][0]+" Status :\nLat : "+data[d][1]+" Lng : "+data[d][2]+" Bin Count : "+" "+5+"\n";
+					st+="Content : "+data[d][7]+" Moisture : "+data[d][8]+" Alter Bin Count As : "+" "+data[d][5]+" \n"+data[d][10]+" \n"+data[d][11];
+					rst.push(st);
+					google.maps.event.addListener(marker, 'click', (function(marker, d) {
+
+					  return function() {
+						alert(rst[d]);
+					  }
+
+					})(marker, d));
+					markers.push(marker);
+			}
+			$.getJSON("https://smartbinlog.mybluemix.net/api/flow/route", function(data2) {
+					var lineSymbol = {
+					  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+					};
+
+				
+					var alat = [];
+					var alng = [];
+
+					var lineSymbol = {
+					  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+					};
+					var flightPlanCoordinates = [];
+					var lt=-1;
+					for(var d2 in data2)lt=lt+1;
+					var inc=0;
+					
+					for(var d2 in data2){
+						for(var d3 in data2){
+							if(data2[d3][9]==inc){
+								flightPlanCoordinates.push( {lat: parseFloat(data2[d3][1]), lng: parseFloat(data2[d3][2])});	
+								inc=inc+1;								
+							}
+						}
+					}
+					
+					
+					
+					
+					 flightPath = new google.maps.Polyline({
+					  path: flightPlanCoordinates,
+					  geodesic: true,
+					  strokeColor: '#FF0000',
+					  strokeOpacity: 1.0,
+					  strokeWeight: 2
+					});
+
+					flightPath.setMap(map);
+
+					alert(stg);				
+		
+			
+			});
+		});
+
+	
+		
+	
+	}
+}
+
+
+</script>
