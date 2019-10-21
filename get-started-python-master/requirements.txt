@@ -1,8 +1,8 @@
-Flask==0.12.2
+Flask==1.0
 
 cf-deployment-tracker==1.0.5
 cloudant==2.7.0
-Flask==0.12.2
+Flask==1.0
 Flask-Cors==3.0.3
 google.directions==0.3
 googlemaps==2.5.1
